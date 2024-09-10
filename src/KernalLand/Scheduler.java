@@ -13,11 +13,14 @@ public class Scheduler {
     public  UserLandProcess currentUserProcess = null;
 
 
+    /**
+     * This is the constructor for the Scheduler class
+     * It creates a TimerTask that interrupts the current process
+     */
    public Scheduler(){
        long interruptTime = 250;
        task = new TimerTask() {
            public void run() {
-               System.out.println("In the interuot dude");
                    if (currentUserProcess == null) {
                        switchProcess();
                        System.out.println("Current userLandProcess is null");
@@ -33,16 +36,25 @@ public class Scheduler {
    }
 
 
-
-
+     /**
+      * This method is used to create a new process and adds it to a list
+      * inorder to be scheduled
+      * @param userProcess the process to be created
+      * @return the pid of the process
+      */
   public int createProcess(UserLandProcess userProcess){
        int success = userProcessList.add(userProcess)? 0: 1;
       if (currentUserProcess == null){
               switchProcess();
       }
-     return success;
+     return userProcess.id;
   }
 
+
+  /**
+   * This method is used to switch the current process
+   * to the next process in the list
+   */
   public void switchProcess(){
        if (currentUserProcess !=null){
            if (currentUserProcess.isDone()){
@@ -52,6 +64,10 @@ public class Scheduler {
        if (!userProcessList.isEmpty())
            currentUserProcess = userProcessList.pop();
   }
+
+
+
+
 
 
 }
