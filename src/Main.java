@@ -10,7 +10,10 @@ public class Main {
 
 
     public static void main(String[] args) {
-        Init init = new Init(new HelloWorld(),new GoodByeWorld("Chicken and rice"));
+        Init init = new Init(
+                new HelloWorld()
+                ,new GoodByeWorld("Chicken and rice")
+        );
         Os.startUp(init);
     }
 }

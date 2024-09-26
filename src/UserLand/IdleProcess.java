@@ -1,5 +1,7 @@
 package UserLand;
 
+import KernalLand.PCB;
+
 public class IdleProcess extends UserLandProcess{
 
     /**

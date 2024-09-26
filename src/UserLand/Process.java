@@ -1,6 +1,8 @@
 package UserLand;
 
 import java.util.concurrent.Semaphore;
+
+import KernalLand.PCB;
 import os.Os;
 
 public abstract class Process implements Runnable {
@@ -9,6 +11,12 @@ public abstract class Process implements Runnable {
     private final Semaphore semaphore = new Semaphore(0);
     private final Thread  thread = new Thread(this);
     public final int id = (int) thread.threadId();
+
+    public Process(){
+        thread.start();
+    }
+
+
 
     /**
      * This method is used to run the main process

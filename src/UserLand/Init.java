@@ -1,9 +1,9 @@
 package UserLand;
 
+import KernalLand.PCB;
 import os.Os;
 
 public class Init extends UserLandProcess {
-
 
     private HelloWorld hola;
     private GoodByeWorld bye;
@@ -23,8 +23,7 @@ public class Init extends UserLandProcess {
      * Processes that run at startUp
      */
     public void init(){
-        Os.createProcess(hola);
-        Os.createProcess(bye);
+        Os.createProcess(hola, PCB.Priority.RealTime);
         Os.createProcess(new GoodByeWorld());
     }
     /**
@@ -33,15 +32,14 @@ public class Init extends UserLandProcess {
     @Override
     public void main(){
         if (!initialized){
-            init();
             initialized = true;
+            init();
         }
 
-
         while (true) {
-            cooperate();
             try {
                 Thread.sleep(50);
+                cooperate();
             } catch (Exception e) {
             }
         }

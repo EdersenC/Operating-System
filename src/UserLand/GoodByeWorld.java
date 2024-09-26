@@ -1,5 +1,10 @@
 package UserLand;
 
+import KernalLand.PCB;
+import os.Os;
+
+import java.util.Objects;
+
 public class GoodByeWorld extends UserLandProcess{
     private String message = "";
 
@@ -21,6 +26,9 @@ public class GoodByeWorld extends UserLandProcess{
      */
     @Override
     public void main() {
+        if (Objects.equals(message, "Pizza")|| Objects.equals(message, "Dogs")) {
+            Os.sleep(500);
+        }
         while (true){
             System.out.println(message);
             cooperate();
