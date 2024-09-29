@@ -4,16 +4,19 @@ import UserLand.Init;
 import UserLand.UserLandProcess;
 import os.Os;
 
+import java.util.ArrayList;
+
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
 
 
     public static void main(String[] args) {
-        Init init = new Init(
-                new HelloWorld()
-                ,new GoodByeWorld("Chicken and rice")
-        );
+        ArrayList<UserLandProcess> starUpProcesses = new ArrayList<>();
+        starUpProcesses.add(new HelloWorld());
+        starUpProcesses.add(new GoodByeWorld());
+        Init init = new Init(starUpProcesses);
+
         Os.startUp(init);
     }
 }

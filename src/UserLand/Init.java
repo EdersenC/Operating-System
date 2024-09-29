@@ -1,21 +1,27 @@
 package UserLand;
 
 import KernalLand.PCB;
+import Test.TestProcess;
 import os.Os;
+
+import java.util.ArrayList;
 
 public class Init extends UserLandProcess {
 
-    private HelloWorld hola;
-    private GoodByeWorld bye;
-    private Boolean initialized = false;
+    public boolean initialized = false;
+    private final ArrayList<UserLandProcess> starUpProcesses;
+    private boolean testMode = false;
 
    /**
-    * @param hello a new hello world process
-    * @param bye a new bye world process
+    *
     */
-  public Init(HelloWorld hello, GoodByeWorld bye){
-      this.hola = hello;
-      this.bye = bye;
+  public Init(ArrayList<UserLandProcess> starUpProcesses){
+   this.starUpProcesses = starUpProcesses;
+  }
+
+  public Init(ArrayList<UserLandProcess> starUpProcesses,boolean testMode){
+   this.starUpProcesses = starUpProcesses;
+   this.testMode = testMode;
   }
 
 
@@ -23,23 +29,33 @@ public class Init extends UserLandProcess {
      * Processes that run at startUp
      */
     public void init(){
-        Os.createProcess(hola, PCB.Priority.RealTime);
-        Os.createProcess(new GoodByeWorld());
+        if (!starUpProcesses.isEmpty()) {
+            if(testMode){
+                TestProcess process = (TestProcess ) starUpProcesses.removeFirst();
+                Os.createProcess(process, process.requestedPriority);
+                System.out.printf("%s process: %s, Creating Process: %s \n ",
+                        message,this,process);
+            }else {
+                UserLandProcess process = starUpProcesses.removeFirst();
+                Os.createProcess(process);
+                System.out.printf("%s process: %s, Creating Process: %s \n ",
+                        message,this,process);
+            }
+        }else {
+            initialized = true;
+            Exit();
+        }
     }
+    public String message = "Init";
     /**
      * This is the main method that will be called when the process is created
      */
     @Override
     public void main(){
-        if (!initialized){
-            initialized = true;
-            init();
-        }
-
         while (true) {
+            init();
             try {
                 Thread.sleep(50);
-                cooperate();
             } catch (Exception e) {
             }
         }

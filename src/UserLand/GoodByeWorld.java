@@ -26,16 +26,14 @@ public class GoodByeWorld extends UserLandProcess{
      */
     @Override
     public void main() {
-        if (Objects.equals(message, "Pizza")|| Objects.equals(message, "Dogs")) {
-            Os.sleep(500);
-        }
+
         while (true){
             System.out.println(message);
-            cooperate();
             try {
-            Thread.sleep(60);
+            Thread.sleep(50);
             }catch (Exception e){
         }
+            cooperate();
         }
     }
 }

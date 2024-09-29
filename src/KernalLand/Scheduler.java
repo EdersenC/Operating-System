@@ -1,6 +1,8 @@
 package KernalLand;
 
 import UserLand.UserLandProcess;
+import os.Os;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -25,12 +27,17 @@ public class Scheduler {
    public Scheduler(){
        long interruptTime = 250;
        task = new TimerTask() {
+           int pastId = 0;
            public void run() {
                    if (currentUserProcess == null) {
                        switchProcess();
                        System.out.println("Current userLandProcess is null");
                    } else {
                        currentUserProcess.requestStop();
+                       if (pastId != currentUserProcess.PID){
+                           currentUserProcess.timedOut = 0;
+                           pastId = currentUserProcess.PID;
+                       }
                        System.out.println("Timer Interrupt");
                    }
 
@@ -81,7 +88,7 @@ public class Scheduler {
    * to the next process in the list
    */
   public void switchProcess(){
-      System.out.println("amount of processes woken up: "+wakeUp());
+      wakeUp();
        if (currentUserProcess!=null){
            if (!currentUserProcess.isDone()){
                getQueue(currentUserProcess.currentPriority)
@@ -89,8 +96,9 @@ public class Scheduler {
            }
        }
        LinkedList<PCB> nextQueue = queuePicker();
-       if (!nextQueue.isEmpty())
+       if (!nextQueue.isEmpty()) {
            currentUserProcess = nextQueue.pop();
+       }
   }
 
   public LinkedList<PCB> queuePicker(){
@@ -102,8 +110,6 @@ public class Scheduler {
          bounds = 4;
          backGroundInt = 3;
          realTimeInt = -1;
-     } else if (interactive.isEmpty()) {
-         return background;
      } else {
          bounds = 10;
      }
@@ -111,7 +117,8 @@ public class Scheduler {
       if (randomInt<=realTimeInt){
           return realTime;
       }
-      if (randomInt==backGroundInt) {
+      boolean backgroundChosen = randomInt==backGroundInt;
+      if ((backgroundChosen && !background.isEmpty()) || interactive.isEmpty()) {
           return background;
       }
       return interactive;
@@ -129,17 +136,26 @@ public class Scheduler {
       currentUserProcess.wakeUpTime = wakeUpTime;
       if (sleepers.isEmpty()){
           sleepers.add(currentUserProcess);
+          currentUserProcess = null;
+          switchProcess();
           return;
       }
       // compares wait times so waking up process is more efficient
       for (int i = 0; i < sleepers.size() ; i++) {
           if (sleepers.get(i).wakeUpTime >= wakeUpTime){
               sleepers.add(i,currentUserProcess);
+              currentUserProcess = null;
               switchProcess();
               return;
           }
       }
   }
+
+  public void exit(){
+          currentUserProcess = null;
+          switchProcess();
+  }
+
 
  /**
   * this function is used in order to wake up a sleeping processes
@@ -163,5 +179,10 @@ public class Scheduler {
       return woken;
   }
 
+  public void Halt(){
+      task.cancel();
+      currentUserProcess.stop();
+      switchProcess();
+  }
 
 }

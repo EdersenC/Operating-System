@@ -13,9 +13,12 @@ public class Os {
    private static Kernel kernel;
    public static callType currentCall;
    public enum callType{
+       Normal,
        CreateProcess,
        SwitchProcess,
        Sleep,
+       Exit,
+       Halt
    }
 
   public static ArrayList<Object> parameters = new ArrayList<>();
@@ -28,28 +31,30 @@ public class Os {
  */
   public static void startUp(UserLandProcess init){
       kernel = new Kernel();
+      Init init1 = (Init) init;
      for (int i = 0; i <1; i++) {
-//         createProcess(init);
-         try {
-             Thread.sleep(50);
-         }catch (Exception e){
-         }
-//         createProcess(new IdleProcess(),PCB.Priority.RealTime);
-         createProcess(new GoodByeWorld("Dogs"),PCB.Priority.Background);
-         createProcess(new GoodByeWorld("Pizza"),PCB.Priority.RealTime);
+      createProcess(init1);
      }
-
+      while (!init1.initialized){
+          try {
+              Thread.sleep(50);
+          }catch (Exception e){
+          }
+      }
+      createProcess(new IdleProcess(),PCB.Priority.Background);
   }
 
-    private static Boolean invokeKernel(callType call){
+    private static boolean invokeKernel(callType call){
         currentCall = call;
         kernel.start();
+        if (currentCall == callType.Halt)
+            return false;
+
         PCB currentProcess = kernel.getCurrentProcess();
-        if (currentProcess != null) {
+        if (currentProcess!= null) {
             currentProcess.stop();
         }
 
-        // this is used to block code execution
         while (returnVal ==null){
             try {
                 Thread.sleep(50);
@@ -57,6 +62,7 @@ public class Os {
             }catch (Exception e){
             }
         }
+
         return false;
     }
 
@@ -101,11 +107,27 @@ public class Os {
    * Loops/sleeps until the kernel sets a return value
    */
    public static void switchProcess(){
+       returnVal = null;
        parameters.clear();
       invokeKernel(callType.SwitchProcess);
    }
 
+  public static void exit(){
+      returnVal = null;
+      parameters.clear();
+      invokeKernel(callType.Exit);
+  }
+
+
+  public static void halt(){
+       kernel.getCurrentProcess().stop();
+      returnVal = null;
+      parameters.clear();
+      invokeKernel(callType.Halt);
+    }
+
    public static void sleep(int milliseconds){
+       returnVal = null;
        parameters.clear();
        parameters.add(milliseconds);
        invokeKernel(callType.Sleep);
