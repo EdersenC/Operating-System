@@ -18,7 +18,8 @@ public class Os {
        SwitchProcess,
        Sleep,
        Exit,
-       Halt
+       Halt,
+       Proceed
    }
 
   public static ArrayList<Object> parameters = new ArrayList<>();
@@ -45,16 +46,17 @@ public class Os {
   }
 
     private static boolean invokeKernel(callType call){
+
+        if (call == callType.Halt)
+            return false;
+
         currentCall = call;
         kernel.start();
-        if (currentCall == callType.Halt)
-            return false;
 
         PCB currentProcess = kernel.getCurrentProcess();
         if (currentProcess!= null) {
             currentProcess.stop();
         }
-
         while (returnVal ==null){
             try {
                 Thread.sleep(50);
@@ -116,6 +118,12 @@ public class Os {
       returnVal = null;
       parameters.clear();
       invokeKernel(callType.Exit);
+  }
+
+  public static void proceed(){
+      returnVal = null;
+      parameters.clear();
+      invokeKernel(callType.Proceed);
   }
 
 

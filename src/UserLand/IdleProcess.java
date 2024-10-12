@@ -12,7 +12,7 @@ public class IdleProcess extends UserLandProcess{
     @Override
     public void main()  {
         while (true){
-            System.out.printf("%s process: %s, Available permits: %s \n ",message,this,semaphore.availablePermits());
+            System.out.printf("%s Idle process running \n ",message);
             cooperate();
             try {
                 Thread.sleep(50);

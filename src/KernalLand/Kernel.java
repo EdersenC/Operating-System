@@ -8,7 +8,6 @@ import java.util.ArrayList;
 public class Kernel extends Process{
 
     private final Scheduler scheduler = new Scheduler();
-    private boolean Halted = false;
 
     /**
      * This method is used to create a new process
@@ -24,7 +23,8 @@ public class Kernel extends Process{
      */
     @Override
     public void main(){
-        while (!Halted) {
+        while (true) {
+            System.out.printf("dfsdfsdf");
             switch (Os.currentCall) {
                 case CreateProcess -> {
                      Os.returnVal = scheduler.createProcess(
@@ -45,17 +45,17 @@ public class Kernel extends Process{
                     Os.returnVal = true;
                 }
                 case Halt -> {
-                    Halted = true;
                     scheduler.Halt();
                     Os.returnVal = true;
-                    Os.currentCall = Os.callType.Halt;
+                }
+                case Proceed -> {
+                    scheduler.Proceed();
+                    Os.returnVal = true;
                 }
             }
-
-            if(scheduler.currentUserProcess !=null && !Halted){
+            if(scheduler.currentUserProcess !=null){
                 scheduler.currentUserProcess.start();
             }
-            System.out.printf("dfsdfsdf");
             stop();
         }
     }

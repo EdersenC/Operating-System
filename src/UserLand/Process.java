@@ -8,10 +8,13 @@ import os.Os;
 public abstract class Process implements Runnable {
 
     private Boolean isExpired = false;
-    public final Semaphore semaphore = new Semaphore(0);
+    private final Semaphore semaphore = new Semaphore(0);
     private final Thread  thread = new Thread(this);
     public final int id = (int) thread.threadId();
     public PCB.Priority PCBSetPriority = null;
+    public boolean Exited = false;
+    public boolean Sleeping = false;
+
 
     public Process(){
         thread.start();

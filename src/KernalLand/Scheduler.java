@@ -18,14 +18,13 @@ public class Scheduler {
     private TimerTask task;
     private final Clock clock = Clock.systemDefaultZone();
     public  PCB currentUserProcess = null;
-
+    private final long interruptTime = 250;
 
     /**
      * This is the constructor for the Scheduler class
      * It creates a TimerTask that interrupts the current process
      */
    public Scheduler(){
-       long interruptTime = 250;
        task = new TimerTask() {
            int pastId = 0;
            public void run() {
@@ -63,7 +62,16 @@ public class Scheduler {
   }
 
 
-
+    /**
+     * Returns the queue corresponding to the given priority.
+     * This method retrieves the appropriate process queue based on the
+     * provided priority value. The available priorities are RealTime,
+     * Interactive, and Background.
+     *
+     * @param priority The priority of the process (RealTime, Interactive, or Background).
+     * @return A LinkedList of PCB that corresponds to the given priority.
+     *         Returns null if the priority does not match any predefined categories.
+     */
   public LinkedList<PCB> getQueue(PCB.Priority priority){
      switch (priority){
          case RealTime -> {
@@ -101,28 +109,43 @@ public class Scheduler {
        }
   }
 
-  public LinkedList<PCB> queuePicker(){
-      Random bot = new Random();
-      int realTimeInt = 5;
-      int backGroundInt = 9;
-      int bounds;
-     if (realTime.isEmpty()) {
-         bounds = 4;
-         backGroundInt = 3;
-         realTimeInt = -1;
-     } else {
-         bounds = 10;
-     }
-      int randomInt = bot.nextInt(bounds);
-      if (randomInt<=realTimeInt){
-          return realTime;
-      }
-      boolean backgroundChosen = randomInt==backGroundInt;
-      if ((backgroundChosen && !background.isEmpty()) || interactive.isEmpty()) {
-          return background;
-      }
-      return interactive;
-  }
+    /**
+     * Selects a queue based on random selection and process availability.
+     * This method uses a random number generator to pick one of three process queues:
+     * realTime, background, or interactive. The selection logic adjusts based on
+     * whether the realTime or background queues are empty.
+     *
+     * @return A LinkedList of PCB representing the chosen queue (realTime, background, or interactive).
+     */
+    public LinkedList<PCB> queuePicker() {
+        Random bot = new Random();
+        int realTimeInt = 5;
+        int backGroundInt = 9;
+        int bounds;
+
+        // Adjust bounds and selection values if realTime queue is empty
+        if (realTime.isEmpty()) {
+            bounds = 4;
+            backGroundInt = 3;
+            realTimeInt = -1;
+        } else {
+            bounds = 10;
+        }
+
+        int randomInt = bot.nextInt(bounds);
+
+        // Return realTime queue if the random number is within its range
+        if (randomInt <= realTimeInt) {
+            return realTime;
+        }
+
+        boolean backgroundChosen = randomInt == backGroundInt;
+        if ((backgroundChosen && !background.isEmpty()) || interactive.isEmpty()) {
+            return background;
+        }
+        return interactive;
+    }
+
 
 
 
@@ -134,6 +157,7 @@ public class Scheduler {
   public void sleep(int milliseconds){
       int wakeUpTime = (int) clock.millis()+milliseconds;
       currentUserProcess.wakeUpTime = wakeUpTime;
+      currentUserProcess.setSleeping();
       if (sleepers.isEmpty()){
           sleepers.add(currentUserProcess);
           currentUserProcess = null;
@@ -152,6 +176,7 @@ public class Scheduler {
   }
 
   public void exit(){
+          currentUserProcess.process.Exited = true;
           currentUserProcess = null;
           switchProcess();
   }
@@ -171,6 +196,7 @@ public class Scheduler {
           if (sleepers.get(i).wakeUpTime <= (int) clock.millis()){
               PCB waking = sleepers.remove(i);
               getQueue(waking.currentPriority).add(waking);
+              waking.setSleeping();
               woken++;
           }else {
               return woken;
@@ -179,10 +205,35 @@ public class Scheduler {
       return woken;
   }
 
+    /**
+     * Halts the current process by stopping the active timer and task,
+     * and switching to the next process.
+     * This method stops the current user process, purges any remaining
+     * tasks in the timer, cancels the current task, and then switches
+     * to the next available process.
+     */
   public void Halt(){
+      timer.purge();
       task.cancel();
       currentUserProcess.stop();
       switchProcess();
   }
+
+
+
+    /**
+     * Halts the current process by stopping the active timer and task,
+     * and switching to the next process.
+
+     * This method stops the current user process, purges any remaining
+     * tasks in the timer, cancels the current task, and then switches
+     * to the next available process.
+     */
+  public void Proceed(){
+      if (currentUserProcess!=null)
+          currentUserProcess.start();
+  }
+
+
 
 }

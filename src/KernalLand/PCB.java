@@ -8,10 +8,8 @@ public class PCB {
     public UserLandProcess process;
     public Priority currentPriority;
 
-    private int sleepTime = 500;
+    public boolean Sleeping;
     public int wakeUpTime;
-
-    public boolean Exited = false;
 
     public int timedOut = 0;
 
@@ -51,7 +49,15 @@ public class PCB {
             process.start();
     }
 
-
+    public void setSleeping(){
+        if (Sleeping){
+            Sleeping = false;
+            process.Sleeping = false;
+            return;
+        }
+        Sleeping = true;
+        process.Sleeping = true;
+    }
 
     private void managePriority(boolean promote){
        switch(currentPriority){

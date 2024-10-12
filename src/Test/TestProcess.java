@@ -5,10 +5,9 @@ import KernalLand.PCB;
 import UserLand.UserLandProcess;
 
 public class TestProcess extends UserLandProcess {
-    private String message = "";
+    public String message = "";
     public int taskCount = 0;
-    public Boolean exits;
-    public boolean exited = false;
+    public boolean exits;
     public PCB.Priority requestedPriority;
 
     /**
@@ -33,8 +32,7 @@ public class TestProcess extends UserLandProcess {
                 Thread.sleep(30);
             }catch (Exception e){
             }
-            System.out.printf("%s process: %s, Available permits: %s Count: %s \n ",
-                    message,this,semaphore.availablePermits(),taskCount);
+            System.out.printf("%s process: %s, Count: %s \n ",message,this,taskCount);
             taskCount++;
             testSleep();
             testExit();
@@ -42,22 +40,21 @@ public class TestProcess extends UserLandProcess {
     }
 
    public void testSleep(){
-       if (taskCount > 10 && sleepTime >0){
+       if (taskCount > 100 && sleepTime >0){
            sleep(sleepTime);
            taskCount = 0;
        }
    }
 
 
+
+
    public void testExit(){
        if (taskCount >100 && exits) {
            taskCount = 0;
-           exited = true;
            Exit();
        }
-       if (!exited){
            cooperate();
-       }
    }
 
 
