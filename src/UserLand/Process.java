@@ -6,7 +6,6 @@ import KernalLand.PCB;
 import os.Os;
 
 public abstract class Process implements Runnable {
-
     private Boolean isExpired = false;
     private final Semaphore semaphore = new Semaphore(0);
     private final Thread  thread = new Thread(this);
@@ -25,7 +24,7 @@ public abstract class Process implements Runnable {
     /**
      * This method is used to run the main process
      */
-    public abstract void main();
+    public abstract void main() throws Exception;
 
     /**
      * This method is used to check if the process is stopped
@@ -64,6 +63,8 @@ public abstract class Process implements Runnable {
             main();
         }catch (InterruptedException e){
             System.out.printf("Error While trying to acquire permit in run: %s",e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

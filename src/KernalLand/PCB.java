@@ -1,8 +1,11 @@
 package KernalLand;
 
+import Devices.Device;
 import UserLand.Process;
 import UserLand.UserLandProcess;
 import os.Os;
+
+import java.util.Arrays;
 
 public class PCB {
     public UserLandProcess process;
@@ -16,6 +19,10 @@ public class PCB {
     public int PID;
     public int nextPID;
 
+    public final int[] idTranslator = new int[10];
+
+
+
     public enum Priority{
         RealTime,
         Interactive,
@@ -27,6 +34,7 @@ public class PCB {
         this.currentPriority = priority;
         this.process.PCBSetPriority = priority;
         PID = process.id;
+        Arrays.fill(idTranslator,-1);
     }
 
 

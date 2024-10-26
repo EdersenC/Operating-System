@@ -16,6 +16,11 @@ public class Os {
        Normal,
        CreateProcess,
        SwitchProcess,
+       open,
+       close,
+       read,
+       write,
+       seek,
        Sleep,
        Exit,
        Halt,
@@ -113,6 +118,51 @@ public class Os {
        parameters.clear();
       invokeKernel(callType.SwitchProcess);
    }
+
+   public static int open(String object){
+       returnVal = null;
+       parameters.clear();
+       parameters.add(object);
+       System.out.println( currentCall);
+       invokeKernel(callType.open);
+       System.out.println( currentCall);
+      return  (int) returnVal;
+   }
+
+   public static void close(int id){
+       returnVal = null;
+       parameters.clear();
+       parameters.add(id);
+       invokeKernel(callType.close);
+   }
+
+   public static void seek(int id, int to){
+       returnVal = null;
+       parameters.clear();
+       parameters.add(id);
+       parameters.add(to);
+       invokeKernel(callType.seek);
+   }
+
+   public static int write(int id, byte[] data){
+       returnVal = null;
+       parameters.clear();
+       parameters.add(id);
+       parameters.add(data);
+       invokeKernel(callType.write);
+       return (int) returnVal;
+   }
+
+   public static byte[] read(int id, int size){
+       returnVal = null;
+       parameters.clear();
+       parameters.add(id);
+       parameters.add(size);
+       invokeKernel(callType.read);
+       return (byte[]) returnVal;
+   }
+
+
 
   public static void exit(){
       returnVal = null;

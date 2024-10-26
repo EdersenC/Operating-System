@@ -28,21 +28,24 @@ public class Test {
       TestProcess demoted = new TestProcess("Never gonna Sleep", 0, false, PCB.Priority.RealTime);
       TestProcess exits = new TestProcess("Gonna Exit", 0, true, PCB.Priority.Background);
       TestProcess normal = new TestProcess("I Will Sleep", 10000, false, PCB.Priority.Interactive);
+      TestProcess readWrite = new TestProcess("I Will Sleep", 100, false, PCB.Priority.Interactive);
 
       // Add processes to startup list
-      startUpProcesses.add(demoted);
-      startUpProcesses.add(normal);
-      startUpProcesses.add(exits);
+//      startUpProcesses.add(demoted);
+//      startUpProcesses.add(normal);
+//      startUpProcesses.add(exits);
+      startUpProcesses.add(readWrite);
 
       // Initialize and start OS
       Init init = new Init(startUpProcesses, true);
       Os.startUp(init);
 
       // Run test cases
-      testExit(exits);
-      testDemotion(demoted, PCB.Priority.Background);
+//      testExit(exits);
+//      testDemotion(demoted, PCB.Priority.Background);
+      reader();
       for (int i = 0; i < 10; i++) {
-         testSleeping(normal);
+//         testSleeping(normal);
       }
    }
 
@@ -102,6 +105,22 @@ public class Test {
       sleep(5000);
       Os.proceed();
    }
+
+
+
+   public static void reader(){
+      TestProcess readWrite = new TestProcess("I Will Sleep",
+              0,
+              false,
+              PCB.Priority.Interactive
+      );
+
+   }
+
+   public static void random(){
+
+   }
+
 
    /**
     * Utility method to sleep for a specified duration.
