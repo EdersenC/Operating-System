@@ -1,8 +1,10 @@
 package os;
 
 import KernalLand.Kernel;
+import KernalLand.Messaging;
 import KernalLand.PCB;
 import UserLand.*;
+import jdk.jshell.spi.ExecutionControl;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -21,6 +23,10 @@ public class Os {
        read,
        write,
        seek,
+       getPid,
+       getPidByName,
+       sendMessage,
+       waitForMessage,
        Sleep,
        Exit,
        Halt,
@@ -40,6 +46,7 @@ public class Os {
       Init init1 = (Init) init;
      for (int i = 0; i <1; i++) {
       createProcess(init1);
+         waitForReturn();
      }
       while (!init1.initialized){
           try {
@@ -48,6 +55,7 @@ public class Os {
           }
       }
       createProcess(new IdleProcess(),PCB.Priority.Background);
+      waitForReturn();
   }
 
     private static boolean invokeKernel(callType call){
@@ -57,11 +65,16 @@ public class Os {
 
         currentCall = call;
         kernel.start();
-
         PCB currentProcess = kernel.getCurrentProcess();
         if (currentProcess!= null) {
             currentProcess.stop();
         }
+        return false;
+    }
+
+
+
+    private static void waitForReturn(){
         while (returnVal ==null){
             try {
                 Thread.sleep(50);
@@ -69,10 +82,7 @@ public class Os {
             }catch (Exception e){
             }
         }
-
-        return false;
     }
-
 
     /**
      *  Creates a new process and adds it to the userLandProcesses
@@ -162,6 +172,33 @@ public class Os {
        return (byte[]) returnVal;
    }
 
+  public static int getPid(){
+      returnVal = null;
+      parameters.clear();
+      invokeKernel(callType.getPid);
+       return (int)returnVal;
+  }
+
+  public static int getPidByName(String name){
+      returnVal = null;
+      parameters.clear();
+      parameters.add(name);
+      invokeKernel(callType.getPidByName);
+      return (int)returnVal;
+  }
+
+   public static void sendMessage(Messaging kernelMessage){
+       returnVal = null;
+       parameters.clear();
+       parameters.add(kernelMessage);
+       invokeKernel(callType.sendMessage);
+   }
+   public static Messaging waitForMessage(){
+       returnVal = null;
+       parameters.clear();
+       invokeKernel(callType.waitForMessage);
+       return (Messaging) returnVal;
+   }
 
 
   public static void exit(){

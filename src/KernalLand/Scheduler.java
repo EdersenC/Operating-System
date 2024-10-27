@@ -1,11 +1,10 @@
 package KernalLand;
 
+import UserLand.Init;
 import UserLand.UserLandProcess;
 import os.Os;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.*;
 
 public class Scheduler {
@@ -14,6 +13,8 @@ public class Scheduler {
     private final LinkedList<PCB> interactive = new LinkedList<>();
     private final LinkedList<PCB> background = new LinkedList<>();
     private final LinkedList<PCB> sleepers = new LinkedList<>();
+    private final LinkedList<PCB> waitingForMessage = new LinkedList<>();
+    private final HashMap<Integer,PCB> processList = new HashMap<Integer, PCB>();
     private Timer timer = new Timer();
     private TimerTask task;
     private final Clock clock = Clock.systemDefaultZone();
@@ -37,9 +38,8 @@ public class Scheduler {
                            currentUserProcess.timedOut = 0;
                            pastId = currentUserProcess.PID;
                        }
-                       System.out.println("Timer Interrupt");
                    }
-
+               System.out.println("Timer Interrupt");
            }
        };
 
@@ -55,6 +55,7 @@ public class Scheduler {
   public int createProcess(UserLandProcess userProcess,PCB.Priority priority){
       PCB pcb = new PCB(userProcess, priority);
       getQueue(pcb.currentPriority).add(pcb);
+      processList.put(pcb.PID,pcb);
       if (currentUserProcess == null){
               switchProcess();
       }
@@ -97,6 +98,7 @@ public class Scheduler {
    */
   public void switchProcess(){
       wakeUp();
+      wakeUpMessageWaiters();
        if (currentUserProcess!=null){
            if (!currentUserProcess.isDone()){
                getQueue(currentUserProcess.currentPriority)
@@ -107,7 +109,12 @@ public class Scheduler {
        if (!nextQueue.isEmpty()) {
            currentUserProcess = nextQueue.pop();
        }
+       assert  currentUserProcess!= null;
   }
+
+
+
+
 
     /**
      * Selects a queue based on random selection and process availability.
@@ -176,9 +183,10 @@ public class Scheduler {
   }
 
   public void exit(){
-          currentUserProcess.process.Exited = true;
-          currentUserProcess = null;
-          switchProcess();
+      currentUserProcess.process.Exited = true;
+      processList.remove(currentUserProcess.PID);
+      currentUserProcess = null;
+      switchProcess();
   }
 
 
@@ -235,5 +243,50 @@ public class Scheduler {
   }
 
 
+    public int getPid() {
+        return currentUserProcess.PID;
+    }
 
+    public int getPidByName(String name) {
+      for (PCB pbg: processList.values()){
+          if (pbg.name.equals(name))
+              return pbg.PID;
+      }
+      return -1;
+    }
+
+
+
+   public int wakeUpMessageWaiters(){
+      int woken = 0;
+       for (int i = 0; i < waitingForMessage.size(); i++) {
+           if (waitingForMessage.get(i).messages.isEmpty())
+               continue;
+           PCB waiting = waitingForMessage.remove(i);
+           getQueue(waiting.currentPriority).add(waiting);
+       }
+       return woken;
+   }
+
+
+    public Messaging waitForMessage() {
+      if (currentUserProcess.messages.isEmpty()){
+         waitingForMessage.add(currentUserProcess);
+          currentUserProcess = null;
+          switchProcess();
+          return null;
+      }
+        return currentUserProcess.messages.removeFirst();
+    }
+
+    public void sendMessage(Messaging message) {
+      Messaging copy = new Messaging(message);
+      copy.senderPid = currentUserProcess.PID;
+      PCB target = processList.getOrDefault(copy.targetPid,null);
+      if (target==null){
+         System.out.println("Could not find process with that PID");
+         return;
+      }
+      target.messages.add(copy);
+    }
 }

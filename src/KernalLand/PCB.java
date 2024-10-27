@@ -6,10 +6,12 @@ import UserLand.UserLandProcess;
 import os.Os;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 
 public class PCB {
     public UserLandProcess process;
     public Priority currentPriority;
+    public String name;
 
     public boolean Sleeping;
     public int wakeUpTime;
@@ -20,6 +22,7 @@ public class PCB {
     public int nextPID;
 
     public final int[] idTranslator = new int[10];
+    public final LinkedList<Messaging> messages =  new LinkedList<>();
 
 
 
@@ -34,19 +37,18 @@ public class PCB {
         this.currentPriority = priority;
         this.process.PCBSetPriority = priority;
         PID = process.id;
+        this.name = process.getClass().getSimpleName();
         Arrays.fill(idTranslator,-1);
     }
 
 
     public void stop(){
             while (!process.isStopped()) {
-                try {
-                    Thread.sleep(10);
                     process.stop();
-                } catch (Exception ignored) {
-                }
+//                System.out.println("Stopping Process: "+process);
             }
             process.stop();
+            assert process.isStopped();
     }
 
     public Boolean isDone(){
@@ -54,6 +56,7 @@ public class PCB {
     }
 
     public void start(){
+//        System.out.println("Starting process: "+process);
             process.start();
     }
 

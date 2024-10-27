@@ -2,6 +2,7 @@ package UserLand;
 
 import java.util.concurrent.Semaphore;
 
+import KernalLand.Messaging;
 import KernalLand.PCB;
 import os.Os;
 
@@ -32,7 +33,7 @@ public abstract class Process implements Runnable {
      * @return Boolean
      */
     public Boolean isStopped(){
-        return semaphore.availablePermits()==0;
+        return semaphore.availablePermits() <= 0;
     }
 
     /**
@@ -48,7 +49,6 @@ public abstract class Process implements Runnable {
      * This method is used to start the process/thread
      */
     public void start() {
-        System.out.println("Starting Process: "+this);
         semaphore.release();
     }
 
@@ -74,7 +74,6 @@ public abstract class Process implements Runnable {
      */
     public void stop() {
         try {
-            System.out.println("Stopping Process: "+this);
             semaphore.acquire();
         }catch (InterruptedException e){
             System.out.printf("Error While trying to acquire permit in stop: %s",e);
@@ -98,7 +97,7 @@ public abstract class Process implements Runnable {
     public void cooperate(){
         if(isExpired){
             isExpired = false;
-            System.out.printf("Cooperating with other process: %s , Permits: %s \n",this,semaphore.availablePermits());
+//            System.out.printf("Cooperating with other process: %s , Permits: %s \n",this,semaphore.availablePermits());
             Os.switchProcess();
         }
     }
@@ -112,6 +111,8 @@ public abstract class Process implements Runnable {
 //        System.out.println("Calling Exit for: "+this);
        Os.exit();
    }
+
+
 
 
 

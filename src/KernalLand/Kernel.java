@@ -36,7 +36,6 @@ public class Kernel extends Process implements Device {
                 }
                 case SwitchProcess ->{
                     scheduler.switchProcess();
-                    Os.returnVal = true;
                 }
                 case Sleep->{
                     scheduler.sleep((int)Os.parameters.removeFirst());
@@ -81,18 +80,32 @@ public class Kernel extends Process implements Device {
                             (int) Os.parameters.removeFirst()
                     );
                 }
-
+                case getPid -> {
+                    Os.returnVal = scheduler.getPid();
+                }
+                case getPidByName -> {
+                    Os.returnVal = scheduler.getPidByName(
+                            (String) Os.parameters.removeFirst()
+                    );
+                }
+                case sendMessage -> {
+                    scheduler.sendMessage(
+                            (Messaging)Os.parameters.removeFirst()
+                    );
+                }
+                case waitForMessage ->{
+                    Os.returnVal = scheduler.waitForMessage();
+                }
                 case Halt -> {
                     scheduler.Halt();
-                    Os.returnVal = true;
                 }
                 case Proceed -> {
                     scheduler.Proceed();
-                    Os.returnVal = true;
                 }
             }
             if(scheduler.currentUserProcess !=null){
-                scheduler.currentUserProcess.start();
+                scheduler.currentUserProcess
+                        .start();
             }
             stop();
         }
