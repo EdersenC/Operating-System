@@ -15,6 +15,7 @@ public class Hardware {
         MEMORY[address] = value;
     }
 
+
     public static int getVirtualPage(int virtualAddress){
         return virtualAddress/PAGESIZE;
     }

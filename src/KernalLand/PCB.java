@@ -16,6 +16,7 @@ public class PCB {
     public Priority currentPriority;
     public String name;
 
+
     public boolean Sleeping;
     public int wakeUpTime;
 
