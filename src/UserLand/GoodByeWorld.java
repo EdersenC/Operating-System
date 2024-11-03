@@ -1,21 +1,20 @@
 package UserLand;
 
 import KernalLand.Messaging;
-import KernalLand.PCB;
 import os.Os;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 public class GoodByeWorld extends UserLandProcess{
     private String message = "";
     int what = 0;
+    private boolean allowMessaging;
     /**
      * This is the constructor of the GoodByeWorld class
-     * @param message the message to be displayed
+     * @param allowMessaging the message to be displayed
      */
-    public GoodByeWorld(String message){
-        this.message = message;
+    public GoodByeWorld(boolean allowMessaging){
+        this.allowMessaging = allowMessaging;
     }
 
     public GoodByeWorld(){
@@ -31,18 +30,19 @@ public class GoodByeWorld extends UserLandProcess{
         boolean sentMessage = false;
         while (true){
             System.out.println(message);
-           if (!sentMessage) {
-               if (receiveMessage()) {
-                   sentMessage = true;
-               }
-           }else {
-               sendMessage();
-               sentMessage = false;
-           }
-
+            if (allowMessaging) {
+                if (!sentMessage) {
+                    if (testReceiveMessage()) {
+                        sentMessage = true;
+                    }
+                } else {
+                    testSendMessage();
+                    sentMessage = false;
+                }
+            }
             cooperate();
             try {
-            Thread.sleep(50);
+            Thread.sleep(200);
             }catch (Exception e){
 
             }
@@ -53,18 +53,13 @@ public class GoodByeWorld extends UserLandProcess{
 
 
 
-//   public void pingPong(){
-//       if (!sentMessage) {
-//           if (receiveMessage()) {
-//               sentMessage = true;
-//           }
-//       }else {
-//          sendMessage();
-//          sentMessage =false;
-//       }
-//   }
 
-    public void sendMessage(){
+    /**
+     * Sends a message to the process with the specified identifier.
+     * The message is constructed using the current process ID, target process ID,
+     * an incrementing message identifier, and a message payload encoded in UTF-8.
+     */
+    public void testSendMessage(){
         String messageString = "2";
         Messaging message = new Messaging(
                 Os.getPid(),
@@ -72,12 +67,19 @@ public class GoodByeWorld extends UserLandProcess{
                 what++,
                 messageString.getBytes(StandardCharsets.UTF_8)
         );
-        Os.sendMessage(message);
+        sendMessage(message);
     }
 
-    public boolean receiveMessage(){
+    /**
+     * Receives a message if available. If no message is received, it waits and
+     * prints a waiting status message. Upon receiving a message, it prints the
+     * sender information and the message identifier.
+     *
+     * @return true if a message was successfully received; false otherwise.
+     */
+    public boolean testReceiveMessage(){
         Messaging received;
-        if ((received = Os.waitForMessage())==null){
+        if ((received = waitForMessage())==null){
             System.out.println("Waiting for Message");
             return false;
         }

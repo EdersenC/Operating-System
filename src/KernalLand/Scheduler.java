@@ -243,50 +243,81 @@ public class Scheduler {
   }
 
 
+    /**
+     * Retrieves the process identifier (PID) of the current user process.
+     *
+     * @return the PID of the current user process
+     */
     public int getPid() {
         return currentUserProcess.PID;
     }
 
+    /**
+     * Retrieves the process identifier (PID) for a process by its name.
+     * Searches through the process list and returns the PID of the matching process.
+     *
+     * @param name the name of the process to locate
+     * @return the PID of the process with the specified name, or -1 if not found
+     */
     public int getPidByName(String name) {
-      for (PCB pbg: processList.values()){
-          if (pbg.name.equals(name))
-              return pbg.PID;
-      }
-      return -1;
+        for (PCB pbg : processList.values()) {
+            if (pbg.name.equals(name))
+                return pbg.PID;
+        }
+        return -1;
     }
 
+    /**
+     * Wakes up processes waiting for messages if messages are available.
+     * Checks each waiting process, removes it from the waiting queue if
+     * it has pending messages, and moves it to its priority queue.
+     *
+     * @return the number of processes woken up
+     */
+    public int wakeUpMessageWaiters() {
+        int woken = 0;
+        for (int i = 0; i < waitingForMessage.size(); i++) {
+            if (waitingForMessage.get(i).messages.isEmpty())
+                continue;
+            PCB waiting = waitingForMessage.remove(i);
+            getQueue(waiting.currentPriority).add(waiting);
+        }
+        return woken;
+    }
 
-
-   public int wakeUpMessageWaiters(){
-      int woken = 0;
-       for (int i = 0; i < waitingForMessage.size(); i++) {
-           if (waitingForMessage.get(i).messages.isEmpty())
-               continue;
-           PCB waiting = waitingForMessage.remove(i);
-           getQueue(waiting.currentPriority).add(waiting);
-       }
-       return woken;
-   }
-
-
+    /**
+     * Waits for a message for the current user process.
+     * If no messages are available, adds the process to the waiting queue,
+     * sets the current process to null, and switches to another process.
+     *
+     * @return a Messaging object containing the received message, or null if no message is received
+     */
     public Messaging waitForMessage() {
-      if (currentUserProcess.messages.isEmpty()){
-         waitingForMessage.add(currentUserProcess);
-          currentUserProcess = null;
-          switchProcess();
-          return null;
-      }
+        if (currentUserProcess.messages.isEmpty()) {
+            waitingForMessage.add(currentUserProcess);
+            currentUserProcess = null;
+            switchProcess();
+            return null;
+        }
         return currentUserProcess.messages.removeFirst();
     }
 
+    /**
+     * Sends a message to a specified target process.
+     * Copies the message, sets the sender's PID, and adds it to the target's message queue.
+     * If the target process is not found, logs an error message.
+     *
+     * @param message the Messaging object to send
+     */
     public void sendMessage(Messaging message) {
-      Messaging copy = new Messaging(message);
-      copy.senderPid = currentUserProcess.PID;
-      PCB target = processList.getOrDefault(copy.targetPid,null);
-      if (target==null){
-         System.out.println("Could not find process with that PID");
-         return;
-      }
-      target.messages.add(copy);
+        Messaging copy = new Messaging(message);
+        copy.senderPid = currentUserProcess.PID;
+        PCB target = processList.getOrDefault(copy.targetPid, null);
+        if (target == null) {
+            System.out.println("Could not find process with that PID");
+            return;
+        }
+        target.messages.add(copy);
     }
+
 }

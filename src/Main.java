@@ -13,8 +13,8 @@ public class Main {
 
     public static void main(String[] args) {
         ArrayList<UserLandProcess> starUpProcesses = new ArrayList<>();
-        starUpProcesses.add(new HelloWorld());
-        starUpProcesses.add(new GoodByeWorld());
+        starUpProcesses.add(new HelloWorld(false));
+        starUpProcesses.add(new GoodByeWorld(false));
         Init init = new Init(starUpProcesses);
 
         Os.startUp(init);

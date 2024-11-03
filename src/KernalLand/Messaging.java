@@ -40,6 +40,10 @@ public class Messaging {
     }
 
 
+
+    /**
+     * Returns the Object in a formated String
+     */
     public String toString(){
     return String.format(
             """

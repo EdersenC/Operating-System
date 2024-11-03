@@ -1,12 +1,15 @@
 package KernalLand;
 
 import Devices.Device;
+import Hardware.Hardware;
 import UserLand.Process;
 import UserLand.UserLandProcess;
 import os.Os;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Random;
 
 public class PCB {
     public UserLandProcess process;
@@ -24,6 +27,8 @@ public class PCB {
     public final int[] idTranslator = new int[10];
     public final LinkedList<Messaging> messages =  new LinkedList<>();
 
+    public final int[] physicalPageNumbers = new int[100];
+
 
 
     public enum Priority{
@@ -39,7 +44,9 @@ public class PCB {
         PID = process.id;
         this.name = process.getClass().getSimpleName();
         Arrays.fill(idTranslator,-1);
+        Arrays.fill(physicalPageNumbers,-1);
     }
+
 
 
     public void stop(){

@@ -1,9 +1,8 @@
 package Test;
 
 import KernalLand.PCB;
-import UserLand.Init;
+import UserLand.*;
 import UserLand.Process;
-import UserLand.UserLandProcess;
 import os.Os;
 
 import java.util.ArrayList;
@@ -30,24 +29,22 @@ public class Test {
       TestProcess normal = new TestProcess("I Will Sleep", 10000, false, PCB.Priority.Interactive);
       TestProcess readWrite = new TestProcess("I Will Sleep", 100, false, PCB.Priority.Interactive);
 
-      // Add processes to startup list
-//      startUpProcesses.add(demoted);
-//      startUpProcesses.add(normal);
-//      startUpProcesses.add(exits);
-      startUpProcesses.add(readWrite);
-
+      //this here is to test messaging with goodbue and hello
+      // Look at the output and see it say: Pong From 2 to: 1 what: #, Ping From 1 to: 2 what: #
+      // "what is being incremented"
+      // might be inconsistent so reRun for clean timing and consistency
+      GoodByeWorld messageBye = new GoodByeWorld(true);
+      HelloWorld messageHello = new HelloWorld(true);
+      startUpProcesses.add(messageHello);
+      startUpProcesses.add(messageBye);
       // Initialize and start OS
-      Init init = new Init(startUpProcesses, true);
+      Init init = new Init(startUpProcesses, false);
       Os.startUp(init);
 
-      // Run test cases
-//      testExit(exits);
-//      testDemotion(demoted, PCB.Priority.Background);
-      reader();
-      for (int i = 0; i < 10; i++) {
-//         testSleeping(normal);
-      }
    }
+
+
+
 
    /**
     * Test the exit of a process.

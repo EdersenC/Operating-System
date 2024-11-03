@@ -89,6 +89,14 @@ public abstract class Process implements Runnable {
     }
 
 
+   public Messaging waitForMessage(){
+       return Os.waitForMessage();
+   }
+
+   public void sendMessage(Messaging message){
+        Os.sendMessage(message);
+   }
+
     /**
      * This method is used to cooperate with other processes
      * It sets the isExpired(quantum) variable to false

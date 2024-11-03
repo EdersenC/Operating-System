@@ -1,16 +1,17 @@
 package KernalLand;
 import Devices.Device;
 import Devices.VFS;
+import Hardware.Hardware;
 import UserLand.Process;
 import UserLand.UserLandProcess;
 import os.Os;
 
-import java.util.ArrayList;
-import java.util.Deque;
+import java.util.*;
 
 public class Kernel extends Process implements Device {
     private final Scheduler scheduler = new Scheduler();
     private final VFS vfs = new VFS();
+    private final boolean[] freeMemoryMap = new boolean[Hardware.PAGESIZE];
 
     /**
      * This method is used to create a new process
@@ -19,6 +20,11 @@ public class Kernel extends Process implements Device {
     public PCB getCurrentProcess(){
         return scheduler.currentUserProcess;
     }
+
+
+   public Kernel(){
+       Arrays.fill(freeMemoryMap, true);
+   }
 
 
     /**
@@ -96,6 +102,11 @@ public class Kernel extends Process implements Device {
                 case waitForMessage ->{
                     Os.returnVal = scheduler.waitForMessage();
                 }
+                case getMapping -> {
+                    getMapping(
+                            (int) Os.parameters.removeFirst()
+                    );
+                }
                 case Halt -> {
                     scheduler.Halt();
                 }
@@ -103,9 +114,9 @@ public class Kernel extends Process implements Device {
                     scheduler.Proceed();
                 }
             }
-            if(scheduler.currentUserProcess !=null){
-                scheduler.currentUserProcess
-                        .start();
+            PCB pcb = scheduler.currentUserProcess;
+            if(pcb!=null){
+                pcb.start();
             }
             stop();
         }
@@ -189,4 +200,90 @@ public class Kernel extends Process implements Device {
     public void isValidIndex(int id) throws Exception {
 
     }
+
+    public void getMapping(int virtualPageNumber){
+        Random random = new Random();
+        int failed = -1;
+        int row = random.nextInt(0,UserLandProcess.TLB.length+1);
+        int physicalIndex = 1;
+        int physicalPageNumber = getCurrentProcess().physicalPageNumbers [virtualPageNumber];
+
+
+        int virtualAddress = Hardware.getVirtualAddress(virtualPageNumber) ;
+        int offset = Hardware.getPageOffset(virtualAddress);
+        int physicalAddress =Hardware.getPhysicalAddress(physicalPageNumber,offset) ;
+
+
+        if (!Objects.equals(physicalPageNumber,failed)){
+            UserLandProcess.TLB[row][physicalIndex] = physicalAddress;
+        }
+        /// not found in map
+    }
+
+
+
+    private boolean isValidSize(int size){
+        int remainder = Hardware.PAGESIZE % size;
+        return!Objects.equals(remainder,0);
+    }
+
+
+    public int allocate(int size){
+        int failed = -1;
+        int allocationSize =  size*Hardware.PAGESIZE;
+        PCB currentProcess  = getCurrentProcess();
+        if (!isValidSize(size))
+            return failed;
+
+        for (int physicalPage = 0; physicalPage < freeMemoryMap.length; physicalPage++) {
+            boolean freePage = freeMemoryMap[physicalPage];
+            if(!freePage)
+                continue;
+
+            if (hasContiguousMemory(physicalPage,size)){
+                claimMemory(physicalPage,size);
+
+                return Hardware.getVirtualAddress(physicalPage);
+            }
+
+        }
+
+        return failed;
+    }
+
+   public void claimMemory(int virtualPage, int size){
+        int physicalPageRange = virtualPage * size;
+        for (int i = virtualPage; i < i+size ; i++) {
+           freeMemoryMap[i] = false;
+        }
+        getCurrentProcess().physicalPageNumbers[virtualPage] = physicalPageRange;
+   }
+
+    public boolean hasContiguousMemory(int index, int size){
+        for (int i = index; i < i+size; i++) {
+            if (!freeMemoryMap[i]){
+               return false;
+            }
+        }
+       return true;
+    }
+
+
+
+    public boolean freeMemory(int pointer, int size){
+        if (!isValidSize(pointer) && !isValidSize(size))
+            return false;
+
+        int physicalPage =0; // need to implement
+        for (int i = 0; i < size; i++) {
+            freeMemoryMap[physicalPage+i] = true;
+        }
+
+        return true;
+    }
+
+
+
+
+
 }

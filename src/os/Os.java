@@ -27,6 +27,7 @@ public class Os {
        getPidByName,
        sendMessage,
        waitForMessage,
+       getMapping,
        Sleep,
        Exit,
        Halt,
@@ -129,104 +130,180 @@ public class Os {
       invokeKernel(callType.SwitchProcess);
    }
 
-   public static int open(String object){
-       returnVal = null;
-       parameters.clear();
-       parameters.add(object);
-       System.out.println( currentCall);
-       invokeKernel(callType.open);
-       System.out.println( currentCall);
-      return  (int) returnVal;
-   }
-
-   public static void close(int id){
-       returnVal = null;
-       parameters.clear();
-       parameters.add(id);
-       invokeKernel(callType.close);
-   }
-
-   public static void seek(int id, int to){
-       returnVal = null;
-       parameters.clear();
-       parameters.add(id);
-       parameters.add(to);
-       invokeKernel(callType.seek);
-   }
-
-   public static int write(int id, byte[] data){
-       returnVal = null;
-       parameters.clear();
-       parameters.add(id);
-       parameters.add(data);
-       invokeKernel(callType.write);
-       return (int) returnVal;
-   }
-
-   public static byte[] read(int id, int size){
-       returnVal = null;
-       parameters.clear();
-       parameters.add(id);
-       parameters.add(size);
-       invokeKernel(callType.read);
-       return (byte[]) returnVal;
-   }
-
-  public static int getPid(){
-      returnVal = null;
-      parameters.clear();
-      invokeKernel(callType.getPid);
-       return (int)returnVal;
-  }
-
-  public static int getPidByName(String name){
-      returnVal = null;
-      parameters.clear();
-      parameters.add(name);
-      invokeKernel(callType.getPidByName);
-      return (int)returnVal;
-  }
-
-   public static void sendMessage(Messaging kernelMessage){
-       returnVal = null;
-       parameters.clear();
-       parameters.add(kernelMessage);
-       invokeKernel(callType.sendMessage);
-   }
-   public static Messaging waitForMessage(){
-       returnVal = null;
-       parameters.clear();
-       invokeKernel(callType.waitForMessage);
-       return (Messaging) returnVal;
-   }
-
-
-  public static void exit(){
-      returnVal = null;
-      parameters.clear();
-      invokeKernel(callType.Exit);
-  }
-
-  public static void proceed(){
-      returnVal = null;
-      parameters.clear();
-      invokeKernel(callType.Proceed);
-  }
-
-
-  public static void halt(){
-       kernel.getCurrentProcess().stop();
-      returnVal = null;
-      parameters.clear();
-      invokeKernel(callType.Halt);
+    /**
+     * Opens an object specified by the given name and invokes the kernel with an open call.
+     *
+     * @param object the name of the object to open
+     * @return an integer identifier representing the opened object
+     */
+    public static int open(String object) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(object);
+        System.out.println(currentCall);
+        invokeKernel(callType.open);
+        System.out.println(currentCall);
+        return (int) returnVal;
     }
 
-   public static void sleep(int milliseconds){
-       returnVal = null;
-       parameters.clear();
-       parameters.add(milliseconds);
-       invokeKernel(callType.Sleep);
-   }
+    /**
+     * Closes the specified object by invoking the kernel with a close call.
+     *
+     * @param id the identifier of the object to close
+     */
+    public static void close(int id) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(id);
+        invokeKernel(callType.close);
+    }
+
+    /**
+     * Moves the position within the specified object to a given location.
+     *
+     * @param id the identifier of the object
+     * @param to the position to seek within the object
+     */
+    public static void seek(int id, int to) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(id);
+        parameters.add(to);
+        invokeKernel(callType.seek);
+    }
+
+    /**
+     * Writes data to the specified object and invokes the kernel with a write call.
+     *
+     * @param id the identifier of the object to write to
+     * @param data the byte array data to write
+     * @return an integer result representing the outcome of the write operation
+     */
+    public static int write(int id, byte[] data) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(id);
+        parameters.add(data);
+        invokeKernel(callType.write);
+        return (int) returnVal;
+    }
+
+    /**
+     * Reads data of a specified size from the specified object.
+     *
+     * @param id the identifier of the object to read from
+     * @param size the number of bytes to read
+     * @return a byte array containing the data read from the object
+     */
+    public static byte[] read(int id, int size) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(id);
+        parameters.add(size);
+        invokeKernel(callType.read);
+        return (byte[]) returnVal;
+    }
+
+    /**
+     * Retrieves the process identifier of the current process.
+     *
+     * @return the process identifier of the current process
+     */
+    public static int getPid() {
+        returnVal = null;
+        parameters.clear();
+        invokeKernel(callType.getPid);
+        return (int) returnVal;
+    }
+
+    /**
+     * Retrieves the process identifier of a process by its name.
+     *
+     * @param name the name of the process to find
+     * @return the process identifier of the specified process
+     */
+    public static int getPidByName(String name) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(name);
+        invokeKernel(callType.getPidByName);
+        return (int) returnVal;
+    }
+
+    /**
+     * Sends a messaging object to the kernel.
+     *
+     * @param kernelMessage the messaging object to send
+     */
+    public static void sendMessage(Messaging kernelMessage) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(kernelMessage);
+        invokeKernel(callType.sendMessage);
+    }
+
+    /**
+     * Waits for an incoming message and retrieves it once received.
+     *
+     * @return a Messaging object containing the received message data
+     */
+    public static Messaging waitForMessage() {
+        returnVal = null;
+        parameters.clear();
+        invokeKernel(callType.waitForMessage);
+        return (Messaging) returnVal;
+    }
+
+    /**
+     * Exits the current process by invoking the kernel exit call.
+     */
+    public static void exit() {
+        returnVal = null;
+        parameters.clear();
+        invokeKernel(callType.Exit);
+    }
+
+    /**
+     * Proceeds to the next step in the process by invoking the kernel proceed call.
+     */
+    public static void proceed() {
+        returnVal = null;
+        parameters.clear();
+        invokeKernel(callType.Proceed);
+    }
+
+    /**
+     * Halts the current process by invoking the kernel halt call.
+     */
+    public static void halt() {
+        kernel.getCurrentProcess().stop();
+        returnVal = null;
+        parameters.clear();
+        invokeKernel(callType.Halt);
+    }
+
+    /**
+     * Pauses the current process for a specified amount of time.
+     *
+     * @param milliseconds the duration to sleep in milliseconds
+     */
+    public static void sleep(int milliseconds) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(milliseconds);
+        invokeKernel(callType.Sleep);
+    }
+
+
+    public static void getMapping(int virtualPageNumber) {
+        returnVal = null;
+        parameters.clear();
+        parameters.add(virtualPageNumber);
+        invokeKernel(callType.getMapping);
+    }
+
+
+
 
 
 
