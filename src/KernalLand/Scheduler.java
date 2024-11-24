@@ -1,5 +1,6 @@
 package KernalLand;
 
+import Hardware.Hardware;
 import UserLand.Init;
 import UserLand.UserLandProcess;
 import os.Os;
@@ -40,6 +41,11 @@ public class Scheduler {
                        }
                    }
                System.out.println("Timer Interrupt");
+                   try {
+                       Thread.sleep(30);
+                   }catch (Exception e){
+
+                   }
            }
        };
 
@@ -99,6 +105,7 @@ public class Scheduler {
   public void switchProcess(){
       wakeUp();
       wakeUpMessageWaiters();
+      Hardware.clearTLB(); // clear TLb for every process switch
        if (currentUserProcess!=null){
            if (!currentUserProcess.isDone()){
                getQueue(currentUserProcess.currentPriority)
@@ -109,7 +116,6 @@ public class Scheduler {
        if (!nextQueue.isEmpty()) {
            currentUserProcess = nextQueue.pop();
        }
-       assert  currentUserProcess!= null;
   }
 
 
@@ -319,5 +325,11 @@ public class Scheduler {
         }
         target.messages.add(copy);
     }
+
+
+
+
+
+
 
 }

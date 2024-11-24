@@ -76,7 +76,9 @@ public class FakeFileSystem implements Device{
         isValidIndex(id);
         byte[] bytes = new byte[size];
         randomAccessFiles[id].read(bytes);
-
+        byte[] test = new byte[size];
+        randomAccessFiles[id].read(test,0,size);
+        randomAccessFiles[id].seek(0);
         return bytes;
     }
 
@@ -104,6 +106,7 @@ public class FakeFileSystem implements Device{
     public int write(int id, byte[] data)throws Exception {
         isValidIndex(id);
         randomAccessFiles[id].write(data);
+        randomAccessFiles[id].seek(0);
         return data.length;
     }
 

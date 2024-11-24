@@ -14,12 +14,13 @@ public class VFS implements Device{
         RandomDevices,
     }
 
+    private final int EMPTY = -1;
     private final int[] translator = new int[10];
     private final Device[] devicesReference = new Device[10];
     private final Device[] devices = {
             new FakeFileSystem(device.FakeFileSystem,deviceProtocol.file),
             new RandomDevice(device.RandomDevices,deviceProtocol.random),
-    };
+};
 
 
     public VFS(){
@@ -86,6 +87,8 @@ public class VFS implements Device{
             int arrayId = translator[id];
             Device device = devicesReference[id];
             device.close(arrayId);
+            translator[id] = EMPTY;
+
     }
 
     /**
@@ -102,8 +105,8 @@ public class VFS implements Device{
 
         int arrayId = translator[id];
         Device device = devicesReference[id];
-
-        return device.read(arrayId,size);
+        byte[] bytes = device.read(arrayId,size);
+        return bytes;
     }
 
     /**

@@ -2,6 +2,7 @@ package UserLand;
 
 import java.util.concurrent.Semaphore;
 
+import Hardware.Hardware;
 import KernalLand.Messaging;
 import KernalLand.PCB;
 import os.Os;
@@ -121,10 +122,17 @@ public abstract class Process implements Runnable {
        Os.exit();
    }
 
+   public int allocate(int size){
+        return Os.allocate(size);
+   }
 
+   public byte read(int address){
+        return Hardware.read(address);
+   }
 
-
-
+   public void write(int address, byte value){
+        Hardware.write(address, value);
+   }
 
 
 

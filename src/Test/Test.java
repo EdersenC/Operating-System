@@ -2,10 +2,7 @@ package Test;
 
 import KernalLand.PCB;
 import UserLand.*;
-import UserLand.Process;
 import os.Os;
-
-import java.util.ArrayList;
 
 import java.util.ArrayList;
 
@@ -35,17 +32,98 @@ public class Test {
       // Look at the output and see it say: Pong From 2 to: 1 what: #, Ping From 1 to: 2 what: #
       // "what is being incremented"
       // might be inconsistent so reRun for clean timing and consistency
-      GoodByeWorld messageBye = new GoodByeWorld(true);
-      HelloWorld messageHello = new HelloWorld(true);
-      startUpProcesses.add(messageHello);
-      startUpProcesses.add(messageBye);
-      // Initialize and start OS
-      Init init = new Init(startUpProcesses, false);
+      String Story = """
+              Halloween ends:
+              never told you how I spent my childhood.
+               I learned how to shoot a gun when I was eight.
+               I learned how to fight. I had nightmares about the basement
+              """;
+
+      String Story2 = """
+      the quick brown fox jumped over the lazy dog
+      the quick brown fox jumped over the lazy dog
+      the quick brown fox jumped over the lazy dog
+      """;
+
+      //Make sure to view TestProcess test Functions as well!!!
+      // they show comparisons if what was written is whats read
+
+      // Use this Block to test Functionality
+      // Only one function can run at a time so uncomment desired func
+      // comment all others
+      // as well to make it easy to test just run the
+      // testAllFunctionality func
+      // I made it so that important events are printed to
+      // Stderr for syntax HighLighting NOT ACTUAL ERRORS
+      // Lastly run a couple times for consistency
+
+      // Start of Paging Test Block:
+//      testAllFunctionality(Story,Story2);
+//      testFreeMemory(Story);
+//      testPageFault();
+//      testNoOverwriting(Story);
+      // End Of Paging Test Block
+
+
+     startUpProcesses.add(normal);
+      Init init = new Init(startUpProcesses, true);
       Os.startUp(init);
+
 
    }
 
 
+   private static void testAllFunctionality(String story, String story2){
+      ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
+      TestProcess storyWriter= new TestProcess("Gonna write a Story",6, PCB.Priority.Interactive,false);
+      TestProcess freeMemory= new TestProcess("Gonna Free 20 Pages",20,PCB.Priority.RealTime,false);
+      // forced exits bye kernel
+      TestProcess writer = new TestProcess("Gonna Touch a unAllocated Page",1,PCB.Priority.RealTime,false);
+      // exits
+      TestProcess testProcess2 = new TestProcess("Writing a story and exiting",6, PCB.Priority.Interactive,true);
+      storyWriter.story = story;
+      testProcess2.story = story2;
+      startUpProcesses.add(writer);
+      startUpProcesses.add(storyWriter);
+      startUpProcesses.add(freeMemory);
+      startUpProcesses.add(testProcess2);
+
+      Init init = new Init(startUpProcesses, true);
+      Os.startUp(init);
+   }
+
+
+
+   private static void testNoOverwriting(String story){
+      ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
+      TestProcess writer = new TestProcess("Writing number",6,PCB.Priority.RealTime,false);
+      TestProcess storyWriter= new TestProcess("Making Story",6, PCB.Priority.Interactive,false);
+      TestProcess testProcess1= new TestProcess("Test process23",6,PCB.Priority.RealTime,false);
+      TestProcess testProcess2 = new TestProcess("Test Process234",6, PCB.Priority.Interactive,false);
+      storyWriter.story = story;
+      Init init = new Init(startUpProcesses, true);
+      Os.startUp(init);
+      Os.halt();
+   }
+
+   private static void testFreeMemory(String story){
+      ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
+      TestProcess writer = new TestProcess("Gonna Free 22 pages",22,PCB.Priority.RealTime,true);
+      TestProcess storyWriter= new TestProcess("Writing and freeing 36 pages",34, PCB.Priority.Interactive,true);
+      storyWriter.story = story;
+      startUpProcesses.add(writer);
+      startUpProcesses.add(storyWriter);
+      Init init = new Init(startUpProcesses, true);
+      Os.startUp(init);
+   }
+
+   private static void testPageFault(){
+      ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
+      TestProcess writer = new TestProcess("Gonna memory thats not mine",1,PCB.Priority.RealTime,false);
+      startUpProcesses.add(writer);
+      Init init = new Init(startUpProcesses, true);
+      Os.startUp(init);
+   }
 
 
    /**

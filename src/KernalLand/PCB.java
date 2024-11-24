@@ -56,7 +56,6 @@ public class PCB {
 //                System.out.println("Stopping Process: "+process);
             }
             process.stop();
-            assert process.isStopped();
     }
 
     public Boolean isDone(){

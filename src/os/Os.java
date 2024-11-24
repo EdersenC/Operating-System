@@ -28,6 +28,7 @@ public class Os {
        sendMessage,
        waitForMessage,
        getMapping,
+       allocate,
        Sleep,
        Exit,
        Halt,
@@ -99,6 +100,7 @@ public class Os {
         parameters.add(userProcess);
         parameters.add(PCB.Priority.Interactive);
         invokeKernel(callType.CreateProcess);
+        waitForReturn();
         return userProcess.id;
     }
 
@@ -116,6 +118,7 @@ public class Os {
         parameters.add(userProcess);
         parameters.add(priority);
         invokeKernel(callType.CreateProcess);
+        waitForReturn();
         return userProcess.id;
     }
 
@@ -143,6 +146,7 @@ public class Os {
         System.out.println(currentCall);
         invokeKernel(callType.open);
         System.out.println(currentCall);
+        waitForReturn();
         return (int) returnVal;
     }
 
@@ -185,6 +189,7 @@ public class Os {
         parameters.add(id);
         parameters.add(data);
         invokeKernel(callType.write);
+        waitForReturn();
         return (int) returnVal;
     }
 
@@ -201,6 +206,7 @@ public class Os {
         parameters.add(id);
         parameters.add(size);
         invokeKernel(callType.read);
+        waitForReturn();
         return (byte[]) returnVal;
     }
 
@@ -213,6 +219,7 @@ public class Os {
         returnVal = null;
         parameters.clear();
         invokeKernel(callType.getPid);
+        waitForReturn();
         return (int) returnVal;
     }
 
@@ -227,6 +234,7 @@ public class Os {
         parameters.clear();
         parameters.add(name);
         invokeKernel(callType.getPidByName);
+        waitForReturn();
         return (int) returnVal;
     }
 
@@ -251,6 +259,7 @@ public class Os {
         returnVal = null;
         parameters.clear();
         invokeKernel(callType.waitForMessage);
+        waitForReturn();
         return (Messaging) returnVal;
     }
 
@@ -295,13 +304,22 @@ public class Os {
         invokeKernel(callType.Sleep);
     }
 
-
     public static void getMapping(int virtualPageNumber) {
         returnVal = null;
         parameters.clear();
         parameters.add(virtualPageNumber);
         invokeKernel(callType.getMapping);
     }
+
+    public static int allocate(int size){
+        returnVal = null;
+        parameters.clear();
+        parameters.add(size);
+        invokeKernel(callType.allocate);
+        waitForReturn();
+        return (int)returnVal ;
+    }
+
 
 
 
