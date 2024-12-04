@@ -27,8 +27,7 @@ public class PCB {
 
     public final int[] idTranslator = new int[10];
     public final LinkedList<Messaging> messages =  new LinkedList<>();
-
-    public final int[] physicalPageNumbers = new int[100];
+    public final VirtualToPhysicalMapping[] physicalMappings = new VirtualToPhysicalMapping[100];
 
 
 
@@ -45,7 +44,7 @@ public class PCB {
         PID = process.id;
         this.name = process.getClass().getSimpleName();
         Arrays.fill(idTranslator,-1);
-        Arrays.fill(physicalPageNumbers,-1);
+//        Arrays.fill(physicalMappings,new VirtualToPhysicalMapping());
     }
 
 

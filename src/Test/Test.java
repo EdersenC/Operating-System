@@ -1,5 +1,6 @@
 package Test;
 
+import Hardware.Hardware;
 import KernalLand.PCB;
 import UserLand.*;
 import os.Os;
@@ -64,28 +65,44 @@ public class Test {
 //      testNoOverwriting(Story);
       // End Of Paging Test Block
 
-
-     startUpProcesses.add(normal);
-      Init init = new Init(startUpProcesses, true);
-      Os.startUp(init);
+      testPiggy(Story);
+//      Init init = new Init(startUpProcesses, true);
+//      Os.startUp(init);
 
 
    }
 
 
+   private static void testPiggy(String story){
+      ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
+      for (int i = 0; i < 21; i++) {
+         boolean exits = (i % 2) != 0;
+         Piggy storyWriter= new Piggy("Gonna write a Story",100, PCB.Priority.Background,exits);
+         Piggy pig= new Piggy("Gonna write a Story",20, PCB.Priority.Background,exits);
+         startUpProcesses.add(storyWriter);
+         startUpProcesses.add(pig);
+         storyWriter.story = story;
+      }
+      Init init = new Init(startUpProcesses, true);
+      Os.startUp(init);
+   }
+
+
    private static void testAllFunctionality(String story, String story2){
       ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
-      TestProcess storyWriter= new TestProcess("Gonna write a Story",6, PCB.Priority.Interactive,false);
-      TestProcess freeMemory= new TestProcess("Gonna Free 20 Pages",20,PCB.Priority.RealTime,false);
+      for (int i = 0; i <20 ; i++) {
+         TestProcess storyWriter= new TestProcess("Gonna write a Story",100, PCB.Priority.Interactive,false);
+         TestProcess freeMemory= new TestProcess("Gonna Free 20 Pages",20,PCB.Priority.RealTime,false);
+         storyWriter.story = story;
+         startUpProcesses.add(storyWriter);
+         startUpProcesses.add(freeMemory);
+      }
       // forced exits bye kernel
       TestProcess writer = new TestProcess("Gonna Touch a unAllocated Page",1,PCB.Priority.RealTime,false);
-      // exits
       TestProcess testProcess2 = new TestProcess("Writing a story and exiting",6, PCB.Priority.Interactive,true);
-      storyWriter.story = story;
       testProcess2.story = story2;
+      // exits
       startUpProcesses.add(writer);
-      startUpProcesses.add(storyWriter);
-      startUpProcesses.add(freeMemory);
       startUpProcesses.add(testProcess2);
 
       Init init = new Init(startUpProcesses, true);

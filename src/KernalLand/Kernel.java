@@ -6,13 +6,16 @@ import UserLand.Process;
 import UserLand.UserLandProcess;
 import os.Os;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Kernel extends Process implements Device {
     private final Scheduler scheduler = new Scheduler();
     private final VFS vfs = new VFS();
     private final boolean[] freeMemoryMap = new boolean[Hardware.PAGESIZE];
-    private final int EMPTY = -1;
+    private final int UNALLOCATED = -1;
+    private final Random random = new Random();
+
 
 
     /**
@@ -53,11 +56,11 @@ public class Kernel extends Process implements Device {
                     PCB currentProcess = getCurrentProcess();
                     int[] currentTranslator = currentProcess.idTranslator;
                     for (int i = 0; i <currentTranslator.length ; i++) {
-                       if (currentTranslator[i] == EMPTY)
+                       if (currentTranslator[i] == UNALLOCATED)
                            continue;
                        vfs.close(currentTranslator[i]);
                     }
-                    freeMemory(0, currentProcess.physicalPageNumbers.length);
+                    freeMemory(0, currentProcess.physicalMappings.length);
                     scheduler.exit();
                 }
                 case open -> {
@@ -166,7 +169,7 @@ public class Kernel extends Process implements Device {
         PCB currentProcess = getCurrentProcess();
         int[] currentTranslator = currentProcess.idTranslator;
         vfs.close(currentTranslator[id]);
-        currentTranslator[id] = EMPTY;
+        currentTranslator[id] = UNALLOCATED;
     }
 
     /**
@@ -216,31 +219,94 @@ public class Kernel extends Process implements Device {
      * @param virtualPageNumber the virtual page number to map
      */
     public void getMapping(int virtualPageNumber) {
-        Random random = new Random();
         PCB currentProcess = getCurrentProcess();
-        int failed = -1;
-        int row = random.nextInt(0, Hardware.TLB.length);
-        int virtualIndex = 0;
-        int physicalIndex = 1;
-        int physicalPageNumber = currentProcess.physicalPageNumbers[virtualPageNumber];
-
-        // if we found a physical page
-        if (!Objects.equals(physicalPageNumber, failed)) {
-            Hardware.TLB[row][physicalIndex] = physicalPageNumber;
-            Hardware.TLB[row][virtualIndex] = virtualPageNumber;
+        VirtualToPhysicalMapping virtualMappings = currentProcess.physicalMappings[virtualPageNumber];
+        if(virtualMappings == null){
+            pageFault(virtualPageNumber);
             return;
         }
+        if (allocatePhysicalMemory(virtualMappings,virtualPageNumber)) return;
+        if(pageSwap(virtualPageNumber)) return;
 
-        // Page fault handling and process exit
+
+    }
+
+
+    private void pageFault(int virtualPageNumber){
         System.err.printf(
                 "Page Fault Process: %s Tried To Access UnAllocated Memory Exiting Process " +
-                        "Virtual Page: %s " +
-                        "Physical Address: %s ",
-                currentProcess.name, virtualPageNumber, physicalPageNumber
+                        "Virtual Page: %s ",
+                getCurrentProcess().name, virtualPageNumber
         );
-        freeMemory(0, currentProcess.physicalPageNumbers.length);
+        // Page fault handling and process exit
+        freeMemory(0, getCurrentProcess().physicalMappings.length);
         scheduler.exit();
     }
+
+   private void updateTLB(VirtualToPhysicalMapping virtualMappings, int virtualPageNumber){
+       int row = random.nextInt(0, Hardware.TLB.length);
+       if (!Objects.equals(virtualMappings.physicalPage, UNALLOCATED)) {
+           Hardware.TLB[row][Hardware.physicalPageIndex] = virtualMappings.physicalPage;
+           Hardware.TLB[row][Hardware.virtualPageIndex] = virtualPageNumber;
+       }
+   }
+
+
+    private boolean allocatePhysicalMemory(VirtualToPhysicalMapping virtualMappings, int virtualPageNumber){
+        List<Integer> unUsedMemory = availablePhysicalPages(1);
+        if (unUsedMemory.isEmpty())return pageSwap(virtualPageNumber);
+        virtualMappings.physicalPage = unUsedMemory.removeFirst();
+        if (virtualMappings.diskPage != UNALLOCATED)hasDiskMapping(virtualMappings);
+        claimPhysicalPages(unUsedMemory);
+        updateTLB(virtualMappings,virtualPageNumber);
+        return true;
+    }
+
+ private boolean hasDiskMapping(VirtualToPhysicalMapping virtualMappings){
+        int swapFile = vfs.getSwapFile();
+        try {
+            seek(swapFile,virtualMappings.diskPage*Hardware.PAGESIZE);
+            byte[] fileData = read(vfs.getSwapFile(),Hardware.PAGESIZE);
+            for (int i = 0; i < fileData.length; i++) {
+                Hardware.write(Hardware.getPhysicalAddress(virtualMappings.physicalPage,i),fileData[i]);
+            }
+           return true;
+        }catch (Exception exception){
+            System.out.println("Failed To Seek and Write Memory from Disk");
+           return false;
+        }
+    }
+
+    private boolean pageSwap(VirtualToPhysicalMapping virtualMapping,int virtualAddress){
+        PCB victim = scheduler.getRandomProcess();
+        int swapFile = vfs.getSwapFile();
+        byte[] data = new byte[Hardware.PAGESIZE];
+        byte overWrite  = 0;
+        for (VirtualToPhysicalMapping mapping: victim.physicalMappings){
+            if (mapping == null) return pageSwap(virtualMapping,virtualAddress);
+            if (mapping.diskPage != UNALLOCATED) continue;
+            if (mapping.physicalPage != UNALLOCATED){
+                virtualMapping.physicalPage = mapping.physicalPage;
+                mapping.physicalPage = -1;
+                for (int i = 0; i < data.length; i++) {
+                    data[i] = read(virtualAddress+i);
+                    write(virtualAddress+i,overWrite);
+                }
+            }
+                try {
+                    mapping.diskPage = vfs.swapFilePosition;
+                    seek(swapFile,vfs.swapFilePosition);
+                    write(id,data);
+                    vfs.incrementSwapFile();
+                }catch (Exception exception){
+                    System.out.println("Failed to write memory to disk");
+                }
+        }
+
+        return false;
+    }
+
+
 
     /**
      * Checks if the given size is valid and aligned to the page size.
@@ -262,13 +328,14 @@ public class Kernel extends Process implements Device {
         int failed = -1;
         if (!isValidSize(size)) return failed;
         List<Integer> physicalPages = availablePhysicalPages(size);
-        assert !physicalPages.isEmpty();
+        //assert !physicalPages.isEmpty();
+        if (physicalPages.isEmpty()){}
 
         // Claim virtual pages and check if allocation succeeded
         int virtualAddress = claimVirtualPages(physicalPages);
         if (virtualAddress == -1) {
-            System.err.println("No More Memory to allocate. Killing process");
-            scheduler.exit();
+            System.err.println("No More Memory to allocate. Stealing Mem");
+           return pageSwap(0);
         }
 
         claimPhysicalPages(physicalPages); // Mark claimed pages in memory map
@@ -293,19 +360,40 @@ public class Kernel extends Process implements Device {
      * @return the starting virtual address for the claimed virtual pages, or -1 if mapping fails
      */
     private int claimVirtualPages(List<Integer> physicalPages) {
-        int[] virtual = getCurrentProcess().physicalPageNumbers;
-        int startPage = -1;
+        VirtualToPhysicalMapping[] virtual = getCurrentProcess().physicalMappings;
+        int startPage = findContiguousMemory(physicalPages.size());
+
+        if (startPage == UNALLOCATED) return UNALLOCATED; // No contiguous memory found
+
+        for (int i = 0; i < physicalPages.size(); i++) {
+            virtual[startPage + i] = new VirtualToPhysicalMapping();
+            virtual[startPage + i].physicalPage = physicalPages.get(i); // Map physical page to virtual page
+        }
+
+        return startPage * Hardware.PAGESIZE; // Return starting virtual address
+    }
+
+    private int findContiguousMemory(int size) {
+        VirtualToPhysicalMapping[] virtual = getCurrentProcess().physicalMappings;
+        int complete = size;
+        int start = 0;
         boolean foundStart = false;
         for (int i = 0; i < virtual.length; i++) {
-            if (!Objects.equals(virtual[i], -1)) continue; // Skip if page is already allocated
-            if (!foundStart) startPage = i;
-            foundStart = true;
-            if (physicalPages.isEmpty()) break;
-            virtual[i] = physicalPages.removeFirst(); // Map physical page to virtual page
+            if (virtual[i] != null) {
+                complete = size;
+                foundStart = false;
+            } else {
+                if (!foundStart) {
+                    start = i;
+                    foundStart = true;
+                }
+                complete--;
+                if (complete == 0) {
+                    return start;
+                }
+            }
         }
-        if (!physicalPages.isEmpty()) // Check if all pages were mapped
-            return -1;
-        return startPage * Hardware.PAGESIZE; // Return starting virtual address
+        return UNALLOCATED;
     }
 
     /**
@@ -316,7 +404,7 @@ public class Kernel extends Process implements Device {
      */
     public List<Integer> availablePhysicalPages(int size) {
         List<Integer> availableMemory = new ArrayList<>();
-        for (int i = 0; (i < freeMemoryMap.length) && size != 0; i++) {
+        for (int i = 0; (i < freeMemoryMap.length) && size > 0; i++) {
             if (freeMemoryMap[i]) {
                 availableMemory.add(i);
                 size--;
@@ -324,6 +412,7 @@ public class Kernel extends Process implements Device {
         }
         return availableMemory;
     }
+
 
     /**
      * Frees a specified number of pages in memory starting from a given pointer.
@@ -335,11 +424,12 @@ public class Kernel extends Process implements Device {
     public boolean freeMemory(int pointer, int size) {
         if (!isValidSize(pointer) && !isValidSize(size)) return false;
         PCB currentProcess = getCurrentProcess();
-        int[] physicalPageNumbers = currentProcess.physicalPageNumbers;
+        VirtualToPhysicalMapping[] physicalPageNumbers = currentProcess.physicalMappings;
         for (int i = pointer; i < size; i++) {
-            int physicalPage = physicalPageNumbers[i];
+            if (physicalPageNumbers[i]==null)continue;
+            int physicalPage = physicalPageNumbers[i].physicalPage;
             if (Objects.equals(physicalPage, -1)) continue; // Skip if page is already free
-            physicalPageNumbers[pointer + i] = -1; // Mark page as free in process mapping
+            physicalPageNumbers[pointer + i] = null; // Mark page as free in process mapping
             freeMemoryMap[physicalPage] = true; // Mark page as available in memory map
             Hardware.freePage(physicalPage); // Free the physical page
             System.err.println("Freeing Page: " + physicalPage);

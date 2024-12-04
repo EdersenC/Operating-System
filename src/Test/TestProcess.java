@@ -1,6 +1,7 @@
 package Test;
 
 
+import Hardware.Hardware;
 import KernalLand.Messaging;
 import KernalLand.PCB;
 import UserLand.UserLandProcess;
@@ -52,8 +53,8 @@ public class TestProcess extends UserLandProcess {
         while (true){
 
             if (doingOperations){
-                System.out.println(testCrude("file Test.txt", """
-                        the Great danny phantom"""));
+               // System.out.println(testCrude("file Test.txt", """the Great danny phantom"""));
+                testPaging();
                 doingOperations = false;
                 Exit();
             }
@@ -94,9 +95,9 @@ public class TestProcess extends UserLandProcess {
 
 
   private void testPaging(){
-      testWrite();
+      testWrite(maxAllocations);
       if (!story.isEmpty())
-          testStoryWriter();
+          testStoryWriter(maxAllocations);
       System.out.println(message);
       if (exits)
           Exit();
@@ -109,15 +110,14 @@ public class TestProcess extends UserLandProcess {
      * Allocates a memory region, writes incremental byte values, and reads back to
      * ensure values are correctly stored.
      */
-    public void testWrite() {
+    public void testWrite(int maxAllocations) {
         if (writeTested) return;
 
-        int size = maxAllocations; // Max allocations for memory set in Test class
-        int virtualAddress = allocate(size);
+        int virtualAddress = allocate(maxAllocations);
         int offset = 0; // Offset within the allocated memory
         byte compare = 0;
 
-        for (int i = 0; i < 5048; i++) {
+        for (int i = 0; i < maxAllocations*Hardware.PAGESIZE; i++) {
             if (i == 40) compare = (byte) i;
             byte g = (byte) i; // Convert loop index to byte for writing
             write(virtualAddress + offset, g);
@@ -137,17 +137,18 @@ public class TestProcess extends UserLandProcess {
         }
     }
 
+
     /**
      * Tests writing a string story to memory by converting it to a byte array,
      * writing the array to a memory location, and reading it back to verify the
      * content integrity.
      */
-    public void testStoryWriter() {
+    public void testStoryWriter(int maxAllocations) {
         if (writeTested) return;
         writeTested = true;
 
         byte[] messageBytes = story.getBytes(StandardCharsets.UTF_8);
-        int address = allocate(maxAllocations);
+        int address = allocate(maxAllocations-1);
 
         // Write each byte of the story to consecutive addresses in memory
         for (int i = 0; i < messageBytes.length; i++) {

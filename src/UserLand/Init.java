@@ -46,6 +46,8 @@ public class Init extends UserLandProcess {
             Exit();
         }
     }
+
+
     public String message = "Init";
     /**
      * This is the main method that will be called when the process is created
@@ -54,10 +56,6 @@ public class Init extends UserLandProcess {
     public void main(){
         while (true) {
             init();
-            try {
-                Thread.sleep(50);
-            } catch (Exception e) {
-            }
         }
     }
 

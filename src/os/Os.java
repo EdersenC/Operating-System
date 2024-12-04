@@ -7,6 +7,7 @@ import UserLand.*;
 import jdk.jshell.spi.ExecutionControl;
 
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -61,7 +62,6 @@ public class Os {
   }
 
     private static boolean invokeKernel(callType call){
-
         if (call == callType.Halt)
             return false;
 

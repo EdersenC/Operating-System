@@ -12,6 +12,8 @@ public class Hardware {
     public static final int[][] TLB = new int[2][2];
     private static final byte[] MEMORY = new byte[PAGESIZE*PAGESIZE];
     private static final int FAILED = -1;
+    public static final int virtualPageIndex = 0;
+    public static  final int physicalPageIndex = 1;
 
 
     /**
@@ -48,7 +50,6 @@ public class Hardware {
         MEMORY[physicalAddress] = value;
     }
 
-
     /**
      * Frees a specific page in memory by setting all bytes in the page to zero.
      *
@@ -69,8 +70,6 @@ public class Hardware {
      *         mapping request if the virtual page is not found
      */
     public static int tlbLookUp(int virtualPage) {
-        int virtualPageIndex = 0;
-        int physicalPageIndex = 1;
         for (int row = 0; row < TLB.length; row++) {
             int tlbVPage = TLB[row][virtualPageIndex];
             if (Objects.equals(tlbVPage, virtualPage)) {

@@ -1,5 +1,8 @@
 package Devices;
 
+import Hardware.Hardware;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class VFS implements Device{
@@ -16,6 +19,8 @@ public class VFS implements Device{
 
     private final int EMPTY = -1;
     private final int[] translator = new int[10];
+    private   int swapFile = -1;
+    public    int swapFilePosition =0;
     private final Device[] devicesReference = new Device[10];
     private final Device[] devices = {
             new FakeFileSystem(device.FakeFileSystem,deviceProtocol.file),
@@ -25,6 +30,27 @@ public class VFS implements Device{
 
     public VFS(){
         Arrays.fill(translator, -1);
+        swapFile = initSwapFile();
+        System.out.println("dfsdf");
+    }
+
+    private int initSwapFile(){
+        try {
+            return open("file pageFile.sys");
+        }catch (Exception exception){
+            return 0;
+        }
+    }
+
+
+    public int getSwapFile(){
+        return swapFile;
+    }
+
+    public int incrementSwapFile(){
+        int currentVal = swapFilePosition;
+        swapFilePosition+=Hardware.PAGESIZE;
+        return currentVal;
     }
 
     @Override

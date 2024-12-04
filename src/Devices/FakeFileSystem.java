@@ -1,17 +1,23 @@
 package Devices;
 
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 
 public class FakeFileSystem implements Device{
    private final RandomAccessFile[] randomAccessFiles = new RandomAccessFile[10];
    private final VFS.device name;
    public final VFS.deviceProtocol protocol;
+   public int swapFile = -1;
+   public int pageNumber = 0;
 
 
    public FakeFileSystem(VFS.device name, VFS.deviceProtocol file){
        this.name = name;
        this.protocol = file;
-  }
+   }
+
+
+
 
 
     @Override

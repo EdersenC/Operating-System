@@ -327,6 +327,20 @@ public class Scheduler {
     }
 
 
+    public PCB getRandomProcess(){
+        Random random = new Random();
+        int randomNum =  random.nextInt(0,processList.size());
+        int i = 0;
+        for (Map.Entry<Integer,PCB> process: processList.entrySet()){
+            if(i != randomNum){
+                i++;
+                continue;
+            }
+
+            return process.getValue();
+        }
+        return processList.get(randomNum);
+    }
 
 
 
