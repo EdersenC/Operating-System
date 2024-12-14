@@ -79,8 +79,8 @@ public class Os {
     private static void waitForReturn(){
         while (returnVal ==null){
             try {
-                Thread.sleep(50);
-                System.out.println("Waiting for Process");
+                Thread.sleep(300);
+                //System.out.println("Waiting for Process");
             }catch (Exception e){
             }
         }

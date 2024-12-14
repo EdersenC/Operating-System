@@ -42,6 +42,7 @@ public class Init extends UserLandProcess {
                         message,this,process);
             }
         }else {
+
             initialized = true;
             Exit();
         }

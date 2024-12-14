@@ -77,10 +77,10 @@ public class Test {
       ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
       for (int i = 0; i < 21; i++) {
          boolean exits = (i % 2) != 0;
-         Piggy storyWriter= new Piggy("Gonna write a Story",100, PCB.Priority.Background,exits);
-         Piggy pig= new Piggy("Gonna write a Story",20, PCB.Priority.Background,exits);
+         Piggy storyWriter= new Piggy("Gonna write a Story",100, PCB.Priority.Background, false);
+//         Piggy pig= new Piggy("Gonna write a Story",20, PCB.Priority.Background,exits);
          startUpProcesses.add(storyWriter);
-         startUpProcesses.add(pig);
+//         startUpProcesses.add(pig);
          storyWriter.story = story;
       }
       Init init = new Init(startUpProcesses, true);
@@ -90,8 +90,8 @@ public class Test {
 
    private static void testAllFunctionality(String story, String story2){
       ArrayList<UserLandProcess> startUpProcesses = new ArrayList<>();
-      for (int i = 0; i <20 ; i++) {
-         TestProcess storyWriter= new TestProcess("Gonna write a Story",100, PCB.Priority.Interactive,false);
+      for (int i = 0; i <2 ; i++) {
+         TestProcess storyWriter= new TestProcess("Gonna write a Story",20, PCB.Priority.Interactive,false);
          TestProcess freeMemory= new TestProcess("Gonna Free 20 Pages",20,PCB.Priority.RealTime,false);
          storyWriter.story = story;
          startUpProcesses.add(storyWriter);

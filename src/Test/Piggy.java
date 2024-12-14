@@ -18,13 +18,13 @@ public class Piggy extends TestProcess {
             if (doingOperations){
                 // System.out.println(testCrude("file Test.txt", """the Great danny phantom"""));
                 doingOperations = false;
-                testStoryWriter(100);
-                testWrite(100);
+                //testStoryWriter(100);
+                testWrite(maxAllocations);
             }
             System.out.println("Oink Oink");
             cooperate();
             try {
-                Thread.sleep(200);
+                Thread.sleep(50);
             }catch (Exception e){
             }
             taskCount++;

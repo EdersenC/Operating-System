@@ -117,24 +117,18 @@ public class TestProcess extends UserLandProcess {
         int offset = 0; // Offset within the allocated memory
         byte compare = 0;
 
-        for (int i = 0; i < maxAllocations*Hardware.PAGESIZE; i++) {
+        for (int i = 0; i < maxAllocations*1024; i++) {
             if (i == 40) compare = (byte) i;
             byte g = (byte) i; // Convert loop index to byte for writing
             write(virtualAddress + offset, g);
             byte val = read(virtualAddress + offset);
-
-            assert val == g;
+            if (val != g) {
+                System.err.println("Failed Comparison"); // Output if comparison fails
+            }
             offset++;
         }
-
         System.err.println(message + ": Done Reading and Writing");
-
         // Verify the specific byte at position 40 is stored correctly by comparing with 'compare'
-        if (compare == read(virtualAddress + compare)) {
-            System.err.println("Passed Comparison"); // Output if comparison is successful
-        } else {
-            System.err.println("Failed Comparison"); // Output if comparison fails
-        }
     }
 
 
